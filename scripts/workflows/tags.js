@@ -32,7 +32,7 @@ module.exports = async ({github, context, core}) => {
 
     core.debug("Existing Package Tag List: ${image_tags}")
 
-    const tag_re = new RegExp(/^v\d+\.\d+(?-rc\d+)?/);
+    const tag_re = new RegExp(/^v\d+\.\d+(?:-rc\d+)?$/);
     const build_tags = tags.filter((tag) => tag_re.test(tag));
 
     core.debug("Filtered Tag List: ${build_tags}")
