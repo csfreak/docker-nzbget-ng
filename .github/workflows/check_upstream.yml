@@ -16,9 +16,9 @@ jobs:
           script: |
             console.log('started');
             const refs = github.git.listMatchingRefs({
-              'nzbget-ng',
-              'nzbget',
-              'tags'
+              owner: 'nzbget-ng',
+              repo: 'nzbget',
+              ref: 'tags'
               });
             console.log(refs);
             const shas = refs.map(x => x.object.sha);
@@ -26,7 +26,7 @@ jobs:
             var tags = [];
             shas.forEach(() => {
               const ref = github.rest.git.getTag({
-                'nzbget-ng',
+                owner: 'nzbget-ng',
                 repo: 'nzbget',
                 tag_sha: this
               });
@@ -36,7 +36,7 @@ jobs:
                 tags.push(ref.tag);
             })
             console.log(tags);
-            return tags;s
+            return tags;
           result-encoding: string
       - name: Call Build
         uses: actions/github-script@v6
@@ -44,10 +44,10 @@ jobs:
         with:
           script: |
             github.rest.actions.createWorkflowDispatch({
-              context.repo.owner,
-              context.repo.repo,
-              'build.yml',
-              'main',
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'build.yml',
+              ref: 'main',
               inputs: {
                 tags: ${{ steps.tags.outputs.result }}
               }
