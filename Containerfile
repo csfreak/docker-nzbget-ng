@@ -8,7 +8,7 @@ RUN tar -zxf ${VERSION}.tar.gz --strip-components 1
 RUN ./configure --disable-curses
 RUN make
 
-FROM gcr.io/gcr.io/distroless/base-debian11:nonroot
+FROM gcr.io/distroless/base-debian11:nonroot
 ENV CONFIG=/config/nzbget.conf
 VOLUME ["/config", "/downloads"]
 EXPOSE 6789
