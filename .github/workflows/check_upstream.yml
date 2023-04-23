@@ -19,7 +19,7 @@ jobs:
               ref: "tags/"
               })
             var tags = [];
-            refs.map(ref => {ref.object.sha;).forEach((sha) => {
+            refs.map(ref => ref.object.sha).forEach((sha) => {
               const ref = github.request('GET /repos/{owner}/{repo}/git/tags/{tag_sha}', {
                 owner: "nzbget-ng",
                 repo: "nzbget",
