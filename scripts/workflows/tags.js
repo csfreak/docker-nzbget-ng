@@ -55,9 +55,18 @@ module.exports = async ({github, context, core}) => {
                 owner: 'nzbget-ng',
                 repo: 'nzbget',
                 tag_sha: ref_data.object.sha
-            })
-            core.debug(` Found date ${tag_data.tagger.date} for tag ${tag}`)
-            return tag ? Date.now() - Date.parse(tag_data.tagger.date) / msInDay < 90 : ''
+            }).catch((err) => {
+                if (err.status === 404)
+                    return github.rest.git.getCommit({
+                        owner: 'nzbget-ng',
+                        repo: 'nzbget',
+                        commit_sha: ref_data.object.sha
+                    });
+                throw new Error(err);
+            });
+            const date = tag_data.tagger.date ? tag_data.tagger : tag_data.committer.date;
+            core.debug(`Found date ${date} for tag ${tag}`);
+            return tag ? Date.now() - Date.parse(date) / msInDay < 90 : ''
         } catch {
             return null
         }
