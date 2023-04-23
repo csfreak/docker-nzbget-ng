@@ -16,14 +16,14 @@ module.exports = async ({github, context, core}) => {
     var tags = [];
 
     await Promise.all(shas.map(async (sha) => {
-        const { data: ref } = await github.rest.git.getTag({
+        const { data: ref } = await github.rest.git.getCommit({
             owner: 'nzbget-ng',
             repo: 'nzbget',
             tag_sha: sha
         });
         core.debug("Tag Ref: ${ref}");
         const msPerDay = 24 * 60 * 60 * 1000;
-        if (Date.now()-Date.Parse(ref.tagger.date)/msPerDay < 30)
+        if (Date.now()-Date.Parse(ref.commiter.date)/msPerDay < 30)
             tags.push(ref.tag);
     }))
         
