@@ -25,7 +25,7 @@ jobs:
         with:
           script: |
             const { TAG } = process.env
-            if Object.keys(github.rest.packages.getPackageVersionForUser({
+            if Object.keys(await github.rest.packages.getPackageVersionForUser({
               package_type: 'docker',
               package_name: 'nzbget-ng',
               username: context.repo.owner,

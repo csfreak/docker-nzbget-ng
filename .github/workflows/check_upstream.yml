@@ -15,7 +15,7 @@ jobs:
         with:
           script: |
             console.log('started');
-            const refs = github.git.listMatchingRefs({
+            const refs = await github.git.listMatchingRefs({
               owner: 'nzbget-ng',
               repo: 'nzbget',
               ref: 'tags'
@@ -25,7 +25,7 @@ jobs:
             console.log(shas);
             var tags = [];
             shas.forEach(() => {
-              const ref = github.rest.git.getTag({
+              const ref = await github.rest.git.getTag({
                 owner: 'nzbget-ng',
                 repo: 'nzbget',
                 tag_sha: this
