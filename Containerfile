@@ -14,5 +14,5 @@ VOLUME ["/config", "/downloads"]
 EXPOSE 6789
 WORKDIR /nzbget
 COPY --from=builder /build/nzbget /build/webui ./
-COPY --from=builder /build/nzbget.config ./webui/nzbget.conf.template
+COPY --from=builder /build/nzbget.conf ./webui/nzbget.conf.template
 CMD [ "nzbget", "-s", "-o", "outputmode=log", "-c", "${CONFIG}"]
