@@ -13,7 +13,7 @@ module.exports = async ({github, context, core}) => {
         (response) => response.data.map((ref) => ref.name)
     );
 
-    core.debug("Tag List:  ${tags}");
+    core.debug(`Tag List:  ${tags}`);
 
     core.info('Getting Existings Packages')
     const image_tags = new Set(await github.paginate(
@@ -30,16 +30,16 @@ module.exports = async ({github, context, core}) => {
         throw new Erorr(err);
     }));
 
-    core.debug("Existing Package Tag List: ${image_tags}")
+    core.debug(`Existing Package Tag List: ${image_tags}`)
 
     const tag_re = new RegExp(/^v\d+\.\d+(?:-rc\d+)?$/);
     const build_tags = tags.filter((tag) => tag_re.test(tag));
 
-    core.debug("Filtered Tag List: ${build_tags}")
+    core.debug(`Filtered Tag List: ${build_tags}`)
 
     const new_tags = build_tags.filter((tag) => !image_tags.has(tag));
 
-    core.info("New Tag List: ${new_tags}")
+    core.info(`New Tag List: ${new_tags}`)
 
     return new_tags
     
