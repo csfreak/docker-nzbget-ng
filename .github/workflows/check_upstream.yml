@@ -9,35 +9,14 @@ jobs:
   check_upstream:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Get Upstream Tags
         uses: actions/github-script@v6
         id: tags
         with:
           script: |
-            console.log('started');
-            const refs = await github.git.listMatchingRefs({
-              owner: 'nzbget-ng',
-              repo: 'nzbget',
-              ref: 'tags'
-              });
-            console.log(refs);
-            const shas = refs.map(x => x.object.sha);
-            console.log(shas);
-            var tags = [];
-            shas.forEach(() => {
-              const ref = await github.rest.git.getTag({
-                owner: 'nzbget-ng',
-                repo: 'nzbget',
-                tag_sha: this
-              });
-              console.log(ref);
-              const msPerDay = 24 * 60 * 60 * 1000;
-              if (Date.now()-Date.Parse(ref.tagger.date)/msPerDay < 30)
-                tags.push(ref.tag);
-            })
-            console.log(tags);
-            return tags;
-          result-encoding: string
+            const script = require('./scripts/workflows/tags.js')
+            await script({github, context, core})
       - name: Call Build
         uses: actions/github-script@v6
         id: call_build
