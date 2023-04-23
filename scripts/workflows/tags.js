@@ -37,9 +37,7 @@ module.exports = async ({github, context, core}) => {
 
     core.debug(`Filtered Tag List: ${build_tags}`)
 
-    const unbuilt_tags = build_tags.filter((tag) => {
-        !image_tags.has(tag)
-    });
+    const unbuilt_tags = build_tags.filter((tag) => !image_tags.has(tag));
 
     core.debug(`Unbuilt Tag List: ${unbuilt_tags}`)
 
@@ -47,18 +45,19 @@ module.exports = async ({github, context, core}) => {
 
     core.debug("Filtering Tags not updated in the last 90 days")
     const new_tags = unbuilt_tags.filter(async(tag) => {
-        await github.rest.git.getRef({
+        const { data: ref_data } = await github.rest.git.getRef({
             owner: 'nzbget-ng',
             repo: 'nzbget',
             ref: `tags/${tag}`
-        }).then(async (response) => {
-            await github.rest.git.getTag({
-                owner: 'nzbget-ng',
-                repo: 'nzbget',
-                tag_sha: response.data.object.sha
-            }).then((response) => Date.parse(response.data.tagger.date) - Date.now() / msInDay > 90 )
         })
-      });
+        const { data: tag_data } = await github.rest.git.getTag({
+            owner: 'nzbget-ng',
+            repo: 'nzbget',
+            tag_sha: ref_data.object.sha
+        })
+        return Date.parse(tag_data.tagger.date) - Date.now() / msInDay > 90 
+        
+    });
 
     core.info(`New Tag List: ${new_tags}`)
 
