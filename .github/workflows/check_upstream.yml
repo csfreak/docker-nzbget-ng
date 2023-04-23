@@ -15,17 +15,17 @@ jobs:
         with:
           script: |
             const tagrefs = github.git.listMatchingRefs({
-              owner: "nzbget-ng",
-              repo: "nzbget",
-              ref: "tags/"
+              owner: 'nzbget-ng',
+              repo: 'nzbget',
+              ref: 'tags'
               })
             console.log(tagrefs)
             var tags = [];
             tagrefs.map(tagref => tagref.object.sha).forEach((sha) => {
               const ref = github.request('GET /repos/{owner}/{repo}/git/tags/{tag_sha}', {
-                owner: "nzbget-ng",
-                repo: "nzbget",
-                tag_sha: sha,
+                owner: 'nzbget-ng',
+                repo: 'nzbget',
+                tag_sha: sha
               })
               console.log(ref)
               const msPerDay = 24 * 60 * 60 * 1000
