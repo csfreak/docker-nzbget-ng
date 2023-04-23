@@ -59,7 +59,7 @@ module.exports = async ({github, context, core}) => {
             core.debug(` Found date ${tag_data.tagger.date} for tag ${tag}`)
             return Date.parse(tag_data.tagger.date) - Date.now() / msInDay > 90
         } catch {
-            return False
+            return false
         }
         
     });
