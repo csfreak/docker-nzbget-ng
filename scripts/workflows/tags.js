@@ -17,7 +17,7 @@ module.exports = async ({github, context, core}) => {
 
     core.info('Getting Existings Packages')
     const image_tags = new Set(await github.paginate(
-        rest.packages.getAllPackageVersionsForPackageOwnedByUser,
+        github.rest.packages.getAllPackageVersionsForPackageOwnedByUser,
         {
             package_type: 'docker',
             package_name: 'nzbget-ng',
@@ -32,7 +32,7 @@ module.exports = async ({github, context, core}) => {
     const build_tags = tags.filter((tag) => tag_re.test(tag));
 
     core.debug("Filtered Tag List: ${build_tags}")
-    
+
     const new_tags = build_tags.filter((tag) => !image_tags.has(tag));
 
     core.info("New Tag List: ${new_tags}")

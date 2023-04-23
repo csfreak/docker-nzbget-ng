@@ -1,4 +1,4 @@
-name: Check Upstream
+name: Check Upstream Tags
 
 on:
   schedule:
