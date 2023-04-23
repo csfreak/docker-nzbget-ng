@@ -30,7 +30,7 @@ jobs:
                 tags.push(ref.tag)
             })
             return tags
-          result_encoding: string
+          result-encoding: string
       - uses: actions/github-script@v6
         id: call_build
         with:
