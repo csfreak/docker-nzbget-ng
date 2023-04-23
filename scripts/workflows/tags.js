@@ -51,22 +51,29 @@ module.exports = async ({github, context, core}) => {
                 repo: 'nzbget',
                 ref: `tags/${tag}`
             })
-            const { data: tag_data } = await github.rest.git.getTag({
-                owner: 'nzbget-ng',
-                repo: 'nzbget',
-                tag_sha: ref_data.object.sha
-            }).catch((err) => {
-                if (err.status === 404)
-                    console.info(`ref for tag ${tag} not found; Trying commit`)
-                    return github.rest.git.getCommit({
+            var date = null;
+            try {
+                const response = await github.rest.git.getTag({
+                    owner: 'nzbget-ng',
+                    repo: 'nzbget',
+                    tag_sha: ref_data.object.sha
+                })
+                core.debug(response)
+                date = response.data.tagger.date
+            } catch (err) {
+                if (err.status === 404) {
+                    console.info(`ref for tag ${tag} not found; Trying commit`);
+                    const response = await github.rest.git.getCommit({
                         owner: 'nzbget-ng',
                         repo: 'nzbget',
                         commit_sha: ref_data.object.sha
                     });
-                throw new Error(err);
-            });
-            core.info(tag_data)
-            const date = tag_data.tagger.date ? tag_data.tagger : tag_data.committer.date;
+                    core.debug(response);
+                    date = response.data.commiter.date;
+                } else {
+                    throw new Error(err);
+                }
+            }
             core.info(`Found date ${date} for tag ${tag}`);
             return tag ? Date.now() - Date.parse(date) / msInDay < 90 : ''
         } catch (err) {
