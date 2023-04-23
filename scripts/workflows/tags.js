@@ -3,14 +3,15 @@
 module.exports = async ({github, context, core}) => {
     core.debug('started');
     const shas = await github.paginate(
-        github.rest.git.listMatchingRefs({
+        github.rest.git.listMatchingRefs,
+        {
             owner: 'nzbget-ng',
             repo: 'nzbget',
             ref: 'tags'
-        }),
+        },
         (response) => response.data.map((ref) => ref.object.sha)
     );
-    
+
     core.debug(shas);
     var tags = [];
 
