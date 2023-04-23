@@ -4,7 +4,7 @@ module.exports = async ({github, context, core}) => {
     core.debug('Tag Processor Started');
     core.info('Getting Upstream Tags')
     const tags = await github.paginate(
-        github.rest.git.listMatchingRefs,
+        github.rest.repos.listTags,
         {
             owner: 'nzbget-ng',
             repo: 'nzbget',
