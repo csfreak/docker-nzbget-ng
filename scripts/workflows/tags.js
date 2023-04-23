@@ -41,12 +41,12 @@ module.exports = async ({github, context, core}) => {
         !image_tags.has(tag)
     });
 
-    core.debug(`Unbuilt Tag List: ${build_tags}`)
+    core.debug(`Unbuilt Tag List: ${unbuilt_tags}`)
 
     const msInDay = 86400000; // 24 * 60 * 60 * 1000
 
     core.debug("Filtering Tags not updated in the last 90 days")
-    const new_tags = await Promise.all(unbuilt_tags.filter(async (tag) => {
+    const new_tags = unbuilt_tags.filter(async(tag) => {
         await github.rest.git.getRef({
             owner: 'nzbget-ng',
             repo: 'nzbget',
@@ -58,7 +58,7 @@ module.exports = async ({github, context, core}) => {
                 tag_sha: response.data.object.sha
             }).then((response) => Date.parse(response.data.tagger.date) - Date.now() / msInDay > 90 )
         })
-      }));
+      });
 
     core.info(`New Tag List: ${new_tags}`)
 
