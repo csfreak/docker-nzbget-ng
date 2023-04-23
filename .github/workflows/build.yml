@@ -16,23 +16,6 @@ jobs:
         tag: ${{ fromJSON(inputs.tags)}}
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/github-script@v6
-        id: check-package
-        env:
-          TAG: ${{ matrix.tag }}
-        with:
-          script: |
-            const { TAG } = process.env
-            if Object.keys(await github.rest.packages.getPackageVersionForUser({
-              package_type: 'docker',
-              package_name: 'nzbget-ng',
-              username: context.repo.owner,
-              package_version_id: '${ TAG }',
-            })).length !=== 0;
-              core.setFailed("Image nzbget-ng:${TAG} already exists")
-
       - name: Buildah Build
         id: build_image
         uses: redhat-actions/buildah-build@v2
@@ -44,6 +27,7 @@ jobs:
           build-args: |
             VERSION=${{ matrix.tag }}
           oci: true
+
       # Push the image to GHCR (Image Registry)
       - name: Push To GHCR
         uses: redhat-actions/push-to-registry@v2

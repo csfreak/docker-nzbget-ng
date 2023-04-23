@@ -1,33 +1,43 @@
 
 
 module.exports = async ({github, context, core}) => {
-    core.debug('started');
-    const shas = await github.paginate(
+    core.debug('Tag Processor Started');
+    core.info('Getting Upstream Tags')
+    const tags = await github.paginate(
         github.rest.git.listMatchingRefs,
         {
             owner: 'nzbget-ng',
             repo: 'nzbget',
             ref: 'tags'
         },
-        (response) => response.data.map((ref) => ref.object.sha)
+        (response) => response.data.map((ref) => ref.name)
     );
 
-    core.debug("Tag Sha List:  ${shas}");
-    var tags = [];
+    core.debug("Tag List:  ${tags}");
 
-    await Promise.all(shas.map(async (sha) => {
-        const { data: ref } = await github.rest.git.getCommit({
-            owner: 'nzbget-ng',
-            repo: 'nzbget',
-            tag_sha: sha
-        });
-        core.debug("Tag Ref: ${ref}");
-        const msPerDay = 24 * 60 * 60 * 1000;
-        if (Date.now()-Date.Parse(ref.commiter.date)/msPerDay < 30)
-            tags.push(ref.tag);
-    }))
-        
-    core.info("Tag List: ${tags}");
-    return tags;
+    core.info('Getting Existings Packages')
+    const image_tags = new Set(await github.paginate(
+        rest.packages.getAllPackageVersionsForPackageOwnedByUser,
+        {
+            package_type: 'docker',
+            package_name: 'nzbget-ng',
+            username: context.repo.owner,
+        },
+        (response) => response.data.map((pkg) => pkg.name)
+    ));
+
+    core.debug("Existing Package Tag List: ${image_tags}")
+
+    const tag_re = new RegExp(/^v\d+\.\d+(?-rc\d+)?/);
+    const build_tags = tags.filter((tag) => tag_re.test(tag));
+
+    core.debug("Filtered Tag List: ${build_tags}")
+    
+    const new_tags = build_tags.filter((tag) => !image_tags.has(tag));
+
+    core.info("New Tag List: ${new_tags}")
+
+    return new_tags
+    
 }
 
