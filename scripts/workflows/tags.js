@@ -1,7 +1,7 @@
 
 
 module.exports = async ({github, context, core}) => {
-    core.debug('Tag Processor Started');
+    core.info('Tag Processor Started');
     core.info('Getting Upstream Tags')
     const tags = await github.paginate(
         github.rest.repos.listTags,
@@ -13,7 +13,7 @@ module.exports = async ({github, context, core}) => {
         (response) => response.data.map((ref) => ref.name)
     );
 
-    core.debug(`Tag List:  ${tags}`);
+    core.info(`Tag List:  ${tags}`);
 
     core.info('Getting Existings Packages')
     const image_tags = new Set(await github.paginate(
@@ -30,20 +30,20 @@ module.exports = async ({github, context, core}) => {
         throw new Erorr(err);
     }));
 
-    core.debug(`Existing Package Tag List: ${image_tags}`)
+    core.info(`Existing Package Tag List: ${image_tags}`)
 
     const tag_re = new RegExp(/^v\d+\.\d+(?:-rc\d+)?$/);
     const build_tags = tags.filter((tag) => tag_re.test(tag) );
 
-    core.debug(`Filtered Tag List: ${build_tags}`)
+    core.info(`Filtered Tag List: ${build_tags}`)
 
     const unbuilt_tags = build_tags.filter((tag) => !image_tags.has(tag));
 
-    core.debug(`Unbuilt Tag List: ${unbuilt_tags}`)
+    core.info(`Unbuilt Tag List: ${unbuilt_tags}`)
 
     const msInDay = 86400000; // 24 * 60 * 60 * 1000
 
-    core.debug("Filtering Tags not updated in the last 90 days")
+    core.info("Filtering Tags not updated in the last 90 days")
     var new_tags = await Promise.all(unbuilt_tags.map(async(tag) => {
         try {
             const { data: ref_data } = await github.rest.git.getRef({
@@ -57,6 +57,7 @@ module.exports = async ({github, context, core}) => {
                 tag_sha: ref_data.object.sha
             }).catch((err) => {
                 if (err.status === 404)
+                    console.info(`ref for tag ${tag} not found; Trying commit`)
                     return github.rest.git.getCommit({
                         owner: 'nzbget-ng',
                         repo: 'nzbget',
@@ -65,7 +66,7 @@ module.exports = async ({github, context, core}) => {
                 throw new Error(err);
             });
             const date = tag_data.tagger.date ? tag_data.tagger : tag_data.committer.date;
-            core.debug(`Found date ${date} for tag ${tag}`);
+            core.info(`Found date ${date} for tag ${tag}`);
             return tag ? Date.now() - Date.parse(date) / msInDay < 90 : ''
         } catch {
             return null
