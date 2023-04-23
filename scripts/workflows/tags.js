@@ -19,7 +19,7 @@ module.exports = async ({github, context, core}) => {
         const { data: ref } = await github.rest.git.getTag({
             owner: 'nzbget-ng',
             repo: 'nzbget',
-            tag_sha: this
+            tag_sha: sha
         });
         core.debug(ref);
         const msPerDay = 24 * 60 * 60 * 1000;
