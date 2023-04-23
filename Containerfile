@@ -1,10 +1,10 @@
 FROM gcc:bullseye as builder
 
-ARG VERSION=21.1
+ARG VERSION=v21.1
 WORKDIR /build
-ADD https://github.com/nzbget-ng/nzbget/archive/refs/tags/v${VERSION}.tar.gz .
+ADD https://github.com/nzbget-ng/nzbget/archive/refs/tags/${VERSION}.tar.gz .
 
-RUN tar -zxf v${VERSION}.tar.gz --strip-components 1 
+RUN tar -zxf ${VERSION}.tar.gz --strip-components 1 
 RUN ./configure --disable-curses
 RUN make
 
