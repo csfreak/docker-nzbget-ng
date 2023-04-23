@@ -65,6 +65,7 @@ module.exports = async ({github, context, core}) => {
                     });
                 throw new Error(err);
             });
+            core.info(tag_data)
             const date = tag_data.tagger.date ? tag_data.tagger : tag_data.committer.date;
             core.info(`Found date ${date} for tag ${tag}`);
             return tag ? Date.now() - Date.parse(date) / msInDay < 90 : ''
