@@ -13,7 +13,7 @@ module.exports = async ({github, context, core}) => {
         (response) => response.data.map((ref) => ref.name)
     );
 
-    core.info(`Tag List:  ${tags}`);
+    core.debug(`Tag List:  ${tags}`);
 
     core.info('Getting Existings Packages')
     const image_tags = new Set(await github.paginate(
@@ -30,16 +30,16 @@ module.exports = async ({github, context, core}) => {
         throw new Erorr(err);
     }));
 
-    core.info(`Existing Package Tag List: ${image_tags}`)
+    core.debug(`Existing Package Tag List: ${image_tags}`)
 
     const tag_re = new RegExp(/^v\d+\.\d+(?:-rc\d+)?$/);
     const build_tags = tags.filter((tag) => tag_re.test(tag) );
 
-    core.info(`Filtered Tag List: ${build_tags}`)
+    core.debug(`Filtered Tag List: ${build_tags}`)
 
     const unbuilt_tags = build_tags.filter((tag) => !image_tags.has(tag));
 
-    core.info(`Unbuilt Tag List: ${unbuilt_tags}`)
+    core.debug(`Unbuilt Tag List: ${unbuilt_tags}`)
 
     const msInDay = 86400000; // 24 * 60 * 60 * 1000
 
@@ -62,7 +62,7 @@ module.exports = async ({github, context, core}) => {
                 date = response.data.tagger.date
             } catch (err) {
                 if (err.status === 404) {
-                    console.info(`ref for tag ${tag} not found; Trying commit`);
+                    console.debug(`ref for tag ${tag} not found; Trying commit`);
                     const response = await github.rest.git.getCommit({
                         owner: 'nzbget-ng',
                         repo: 'nzbget',
@@ -73,17 +73,21 @@ module.exports = async ({github, context, core}) => {
                 } else {
                     throw new Error(err);
                 }
-            }
-            core.info(`Found date ${date} for tag ${tag}`);
-            return tag ? Date.now() - Date.parse(date) / msInDay < 90 : ''
+            } 
+            const age = Date.now() - Date.parse(date) / msInDay
+            core.info(`Found date ${date} for tag ${tag} (${age} days old)`);
+            return tag ? age < 90 : null
         } catch (err) {
-            core.info(`Failed to load ${tag}: ${err}`)
+            core.warn(`Failed to load ${tag}: ${err}`)
             return null
         }
         
     }));
 
-    new_tags = new_tags.filter((tag) => tag);
+    core.debug(`New Tag List (w/ nulls): ${new_tags}`);
+
+    new_tags = new_tags.filter((tag) => tag );
+    
     core.info(`New Tag List: ${new_tags}`);
 
     return new_tags.filter((tag) => tag)
