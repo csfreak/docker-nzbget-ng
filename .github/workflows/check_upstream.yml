@@ -1,0 +1,46 @@
+name: Check Upstream
+
+on:
+  schedule:
+    - cron: 12 4 * * *
+  workflow_dispatch:
+
+jobs:
+  check_upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        id: tags
+        with:
+          script: |
+            const refs = github.git.listMatchingRefs({
+              owner: "nzbget-ng",
+              repo: "nzbget",
+              ref: "tags/"
+              })
+            var tags = [];
+            refs.map(ref => {ref.object.sha;).forEach((sha) => {
+              const ref = github.request('GET /repos/{owner}/{repo}/git/tags/{tag_sha}', {
+                owner: "nzbget-ng",
+                repo: "nzbget",
+                tag_sha: sha,
+              })
+              const msPerDay = 24 * 60 * 60 * 1000
+              if ((Date.now()-Date.Parse(ref.tagger.date)/msPerDay < 30)
+                tags.push(ref.tag)
+            })
+            return tags
+          return_encoding: string
+      - uses: actions/github-script@v6
+        id: call_build
+        with:
+          script: |
+            github.request('POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'build.yml',
+              ref: 'main',
+              inputs: {
+                tags: ${{ steps.tags.outputs.result }}
+              }
+            })

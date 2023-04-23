@@ -1,0 +1,61 @@
+name: Build Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: Application Tags to Build
+        required: true
+        default: '["stable"]'
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tag: ${{ fromJSON(inputs.tags)}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/github-script@v6
+        id: check-package
+        env:
+          TAG: ${{ matrix.tag }}
+        with:
+          script: |
+            const { TAG } = process.env
+            if Object.keys(github.request('GET /orgs/{org}/packages/{package_type}/{package_name}/versions/{package_version_id}', {
+              package_type: 'docker',
+              package_name: 'nzbget-ng',
+              org: context.repo.owner,
+              package_version_id: '${ TAG }',
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+            })).length !=== 0;
+              core.setFailed("Image nzbget-ng:${TAG} already exists")
+
+      - name: Buildah Build
+        id: build_image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: nzbget-ng
+          tags: ${{ matrix.tag }}
+          containerfiles: |
+            ./Containerfile
+          build-args: |
+            VERSION=${{ matrix.tag }}
+          oci: true
+      # Push the image to GHCR (Image Registry)
+      - name: Push To GHCR
+        uses: redhat-actions/push-to-registry@v2
+        id: push
+        with:
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+          registry: ghcr.io/${{ github.repository_owner }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          extra-args: |
+            --disable-content-trust
