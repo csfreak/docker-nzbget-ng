@@ -2,18 +2,18 @@
 
 module.exports = async ({github, context, core}) => {
     core.debug('started');
-    const { refs } = await github.rest.git.listMatchingRefs({
+    const { data: refs } = github.paginate(github.rest.git.listMatchingRefs({
         owner: 'nzbget-ng',
         repo: 'nzbget',
         ref: 'tags'
-    });
+    }));
     core.debug(refs);
     const shas = refs.map(x => x.object.sha);
     core.debug(shas);
     var tags = [];
 
     await Promise.all(shas.map(async (sha) => {
-        const { ref } = await github.rest.git.getTag({
+        const { data: ref } = await github.rest.git.getTag({
             owner: 'nzbget-ng',
             repo: 'nzbget',
             tag_sha: this
