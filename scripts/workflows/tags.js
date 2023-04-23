@@ -12,7 +12,7 @@ module.exports = async ({github, context, core}) => {
         (response) => response.data.map((ref) => ref.object.sha)
     );
 
-    core.debug(shas);
+    core.debug("Tag Sha List:  ${shas}");
     var tags = [];
 
     await Promise.all(shas.map(async (sha) => {
@@ -21,13 +21,13 @@ module.exports = async ({github, context, core}) => {
             repo: 'nzbget',
             tag_sha: sha
         });
-        core.debug(ref);
+        core.debug("Tag Ref: ${ref}");
         const msPerDay = 24 * 60 * 60 * 1000;
         if (Date.now()-Date.Parse(ref.tagger.date)/msPerDay < 30)
             tags.push(ref.tag);
     }))
         
-    core.debug(tags);
+    core.info("Tag List: ${tags}");
     return tags;
 }
 
