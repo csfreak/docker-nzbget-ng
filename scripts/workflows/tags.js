@@ -69,7 +69,7 @@ module.exports = async ({github, context, core}) => {
                         commit_sha: ref_data.object.sha
                     });
                     core.debug(response);
-                    date = response.data.commiter.date;
+                    date = response.data.committer.date;
                 } else {
                     throw new Error(err);
                 }
