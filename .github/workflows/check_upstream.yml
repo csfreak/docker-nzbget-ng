@@ -14,26 +14,29 @@ jobs:
         id: tags
         with:
           script: |
-            const tagrefs = github.git.listMatchingRefs({
+            console.log('started');
+            const refs = github.git.listMatchingRefs({
               owner: 'nzbget-ng',
               repo: 'nzbget',
               ref: 'tags'
-              })
-            console.log(tagrefs)
+              });
+            console.log(refs);
+            const shas = refs.map(x => x.object.sha);
+            console.log(shas);
             var tags = [];
-            tagrefs.map(tagref => tagref.object.sha).forEach((sha) => {
+            shas.forEach(() => {
               const ref = github.request('GET /repos/{owner}/{repo}/git/tags/{tag_sha}', {
                 owner: 'nzbget-ng',
                 repo: 'nzbget',
-                tag_sha: sha
-              })
-              console.log(ref)
-              const msPerDay = 24 * 60 * 60 * 1000
+                tag_sha: this
+              });
+              console.log(ref);
+              const msPerDay = 24 * 60 * 60 * 1000;
               if ((Date.now()-Date.Parse(ref.tagger.date)/msPerDay < 30)
-                tags.push(ref.tag)
+                tags.push(ref.tag);
             })
-            console.log(tags)
-            return tags
+            console.log(tags);
+            return tags;s
           result-encoding: string
       - name: Call Build
         uses: actions/github-script@v6
