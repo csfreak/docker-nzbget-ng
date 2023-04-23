@@ -44,7 +44,7 @@ module.exports = async ({github, context, core}) => {
     const msInDay = 86400000; // 24 * 60 * 60 * 1000
 
     core.debug("Filtering Tags not updated in the last 90 days")
-    const new_tags = await Promise.all(unbuilt_tags.filter(async(tag) => {
+    const new_tags = await Promise.all(unbuilt_tags.map(async(tag) => {
         try {
             const { data: ref_data } = await github.rest.git.getRef({
                 owner: 'nzbget-ng',
@@ -57,14 +57,14 @@ module.exports = async ({github, context, core}) => {
                 tag_sha: ref_data.object.sha
             })
             core.debug(` Found date ${tag_data.tagger.date} for tag ${tag}`)
-            return Date.parse(tag_data.tagger.date) - Date.now() / msInDay > 90
+            return tag ? Date.now() - Date.parse(tag_data.tagger.date) / msInDay < 90 : ''
         } catch {
-            return false
+            return null
         }
         
-    }));
+    })).filter((tag) => tag);
 
-    core.info(`New Tag List: ${new_tags}`)
+    core.info(`New Tag List: ${new_tags}`);
 
     return new_tags
     
