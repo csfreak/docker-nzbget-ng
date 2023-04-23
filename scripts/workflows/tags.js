@@ -24,7 +24,11 @@ module.exports = async ({github, context, core}) => {
             username: context.repo.owner,
         },
         (response) => response.data.map((pkg) => pkg.name)
-    ));
+    ).catch((err) => {
+        if (err.status === 404)
+            return [];
+        throw new Erorr(err);
+    }));
 
     core.debug("Existing Package Tag List: ${image_tags}")
 
