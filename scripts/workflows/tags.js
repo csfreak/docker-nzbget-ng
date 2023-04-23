@@ -74,7 +74,7 @@ module.exports = async ({github, context, core}) => {
                     throw new Error(err);
                 }
             } 
-            const age = Date.now() - Date.parse(date) / msInDay
+            const age = (Date.now() - Date.parse(date)) / msInDay
             core.info(`Found date ${date} for tag ${tag} (${age} days old)`);
             return tag ? age < 90 : null
         } catch (err) {
