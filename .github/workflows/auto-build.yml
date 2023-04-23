@@ -20,14 +20,15 @@ jobs:
       - name: Call Build
         uses: actions/github-script@v6
         id: call_build
+        env:
+          TAGS: ${{ steps.tags.outputs.result }}
         with:
           script: |
+            const { TAGS } = process.env
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'build.yml',
               ref: 'main',
-              inputs: {
-                tags: ${{ steps.tags.outputs.result }}
-              }
+              inputs: { tags: ${TAGS} }
             })
