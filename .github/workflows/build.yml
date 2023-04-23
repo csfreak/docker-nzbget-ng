@@ -6,7 +6,7 @@ on:
       tags:
         description: Application Tags to Build
         required: true
-        default: '["stable"]'
+        default: '["v21.1"]'
         type: string
 jobs:
   build:
